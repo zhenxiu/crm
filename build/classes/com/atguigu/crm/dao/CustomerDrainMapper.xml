@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.atguigu.crm.dao.CustomerDrainMapper">
+	
+	<sql id="queryCondition">
+		<where>
+			<if test="customer.name != null">
+				c.name LIKE #{customer.name}
+			</if>
+			<if test="customer.manager.name != null">
+				AND ct.name LIKE #{customer.manager.name}
+			</if>
+		</where>
+	</sql>
+	
+	<select id="get" resultType="com.atguigu.crm.entity.CustomerDrain">
+		select d.id, delay, drain_date as "drainDate", d.reason, d.status, 
+		last_order_date as "lastOrderDate", d.customer_id as "customer.id", 
+		c.name as "customer.name", ct.name as "customer.manager.name" 
+		from customer_drains d 
+		left outer join customers c 
+		on d.customer_id = c.id 
+		left outer join contacts ct 
+		on c.manager_id = ct.id
+		where d.id = #{id}
+	</select>
+	
+	
+	<select id="selectTotalRecords" resultType="long">
+		select count(d.id) 
+		from customer_drains d
+	</select>
+	
+	<!-- <select id="selectPageContent" resultType="com.atguigu.crm.entity.CustomerDrain">
+		select d.id, delay, drain_date as "drainDate", d.reason, d.status, 
+		last_order_date as "lastOrderDate", d.customer_id as "customer.id", 
+		c.name as "customer.name", ct.name as "customer.manager.name" 
+		from customer_drains d 
+		left outer join customers c 
+		on d.customer_id = c.id 
+		left outer join contacts ct 
+		on c.manager_id = ct.id
+	</select> -->
+	
+	<select id="selectPageContent" resultType="com.atguigu.crm.entity.CustomerDrain">
+		select r.*
+		from (
+			select rownum rn , d.id, delay, drain_date as "drainDate", d.reason, d.status, 
+			last_order_date as "lastOrderDate", d.customer_id as "customer.id", 
+			c.name as "customer.name", ct.name as "customer.manager.name" 
+			from customer_drains d 
+			left outer join customers c 
+			on d.customer_id = c.id 
+			left outer join contacts ct 
+			on c.manager_id = ct.id 
+			
+		) r
+		<![CDATA[
+			where rn > #{fromIndex} and rn <= #{endIndex}
+		]]>
+	</select>
+	
+</mapper>
+

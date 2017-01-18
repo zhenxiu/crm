@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.crm.dao.SalesChanceMapper">
+	
+	<sql id="queryCondition">
+		<where>
+			<if test="designeeId != null">
+				designee_id = #{designeeId}
+			</if>
+			<if test="status != null">
+				AND status = ${status}
+			</if>
+			<if test="custName!=null">
+				AND cust_name LIKE #{custName}
+			</if>
+			<if test="title!=null">
+				AND title LIKE #{title}
+			</if>
+			<if test="contact!=null">
+				AND contact LIKE #{contact}
+			</if>
+		</where>
+	</sql>
+	
+	<sql id="chanceColumns">
+		s.id , contact, contact_tel, create_date, cust_name, 
+			s.description, rate, source, s.status, 
+			s.title, created_user_id as "createBy.id",  designee_id as "designee.id"
+	</sql>
+	
+	<update id="update" parameterType="com.atguigu.crm.entity.SalesChance">
+		UPDATE sales_chances 
+		SET contact = #{contact}, contact_tel = #{contactTel}, create_date = #{createDate}, 
+			cust_name = #{custName}, description = #{description}, DESIGNEE_DATE = #{designeeDate,jdbcType=DATE},
+			rate = #{rate}, source = #{source,jdbcType=VARCHAR}, status = #{status}, title = #{title,jdbcType=VARCHAR}, 
+			created_user_id = #{createBy.id}, DESIGNEE_ID = #{designee.id,jdbcType=INTEGER}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="get" resultMap="SalesChanceResult">
+		select <include refid="chanceColumns"/>,u.name as "designee.name",
+		       p.id "p_id",p.plan_date,p.plan_result,p.todo,p.chance_id,
+		       (select name from users where id=created_user_id) as "createBy.name" 
+		       from users u right outer join sales_chances s on(u.id=s.designee_id) 
+		       left outer join sales_plan p on(s.id=p.chance_id) 
+		       where s.id=#{id}
+	</select>
+	<resultMap type="com.atguigu.crm.entity.SalesChance" id="SalesChanceResult">
+		<id column="id" property="id" />
+		<result column="contact" property="contact" />
+		<result column="contact_tel" property="contactTel"/>
+		<result column="create_date" property="createDate"/>
+		<result column="cust_name" property="custName"/>
+		<result column="description" property="description" />
+		<result column="designee_date" property="designeeDate"/>
+		<result column="rate" property="rate"/>
+		<result column="source" property="source" />
+		<result column="status" property="status"/>
+		<result column="title" property="title"/>
+		<result column="createBy.id" property="createBy.id"/>
+		<result column="designee.id" property="designee.id"/>
+		<result column="designee.name" property="designee.name"/>
+		<result column="createBy.name" property="createBy.name"/>
+		<collection property="salesPlans" ofType="com.atguigu.crm.entity.SalesPlan" javaType="java.util.HashSet">
+			<id column="p_id" property="id" />
+			<result column="plan_date" property="date" />
+			<result column="plan_result" property="result" />
+			<result column="todo" property="todo" />
+			<result column="chance_id" property="chance.id" />
+		</collection>	
+	</resultMap>
+	
+	<!-- <resultMap type="com.atguigu.crm.entity.SalesChance" id="getSalesChance">
+		<id column="id" property="id"/>
+		<collection property="salesPlans" javaType="com.atguigu.crm.entity.SalesPlan" columnPrefix="o_">
+			<id column="id" property="id"/>
+			<result column="plan_date" property="date"/>
+			<result column="chance_id" property="chance.id"/>
+			<result column="plan_result" property="result"/>
+			<result column="todo" property="todo"/>
+		</collection>
+	</resultMap>
+	
+	<select id="get" resultMap="getSalesChance">
+		SELECT <include refid="chanceColumns"/>,u.name as "createBy.name", r.name as "createBy.role.name", u.name as "designee.name"  
+		FROM sales_chances s 
+		left outer join users u 
+		on s.created_user_id = u.id 
+		left outer join roles r 
+		on u.role_id = r.id 
+		left outer join sales_plan o 
+		on s.id = o.chance_id
+		WHERE s.id = #{id}
+	</select> -->
+	
+	<insert id="save" parameterType="com.atguigu.crm.entity.SalesChance">
+		INSERT INTO sales_chances(id, contact, contact_tel, create_date, cust_name, 
+			description, rate, source, status, title, created_user_id)
+		VALUES(crm_seq.nextval, #{contact}, #{contactTel}, #{createDate}, #{custName}, 
+			#{description}, #{rate}, #{source}, #{status}, #{title}, #{createBy.id})
+	</insert>
+	
+	
+	<!-- 查询分页信息 count -->
+	<select id="selectTotalRecords" resultType="long">
+		select count(id) 
+		from sales_chances s
+		<include refid="queryCondition"/>
+	</select>
+	
+	<!-- 查询分页的 content -->
+	<!-- 编号     客户名称     概要      联系人      联系人电话       创建时间  -->
+	<select id="selectPageContent" resultType="com.atguigu.crm.entity.SalesChance">
+		select r.*
+		from (
+			select rownum rn , <include refid="chanceColumns"/> 
+			from sales_chances s
+			<include refid="queryCondition"/>
+		) r
+		<![CDATA[
+			where rn > #{fromIndex} and rn <= #{endIndex}
+		]]>
+	</select>
+</mapper>
+

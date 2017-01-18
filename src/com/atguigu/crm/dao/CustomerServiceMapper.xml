@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.atguigu.crm.dao.CustomerServiceMapper">
+	<!-- serviceType=å¨è¯¢, serviceTitle=MM, customer=Customer [no=null], 
+	serviceState=æ°åå»º, serviceRequest=MM, createdby=null, 
+	createDate=Thu Aug 27 00:00:00 CST 2015, allotTo=null, 
+	allotDate=null, serviceDeal=null, dealDate=null, dealResult=null,
+	 satisfy=null -->
+	 
+	 <sql id="queryCondition">
+	 	<where>
+	 		cs.created_id = #{createId}
+	 		<if test="serviceState != null">
+	 			AND service_state LIKE #{serviceState}
+	 		</if>
+	 		<if test="serviceType != null">
+	 			AND service_type LIKE #{serviceType}
+	 		</if>
+	 		<if test="serviceTitle != null">
+	 			AND service_title LIKE #{serviceTitle}
+	 		</if>
+	 		<if test="custName != null">
+	 			AND c.name LIKE #{custName}
+	 		</if>
+	 		<if test="createDate1 != null">
+	 			<![CDATA[
+		 			AND cs.create_date >= to_date(#{createDate1},'yyyy-MM-dd') 
+	 			]]>
+	 		</if>
+	 		<if test="createDate2 != null">
+	 			<![CDATA[
+		 			AND cs.create_date <= to_date(#{createDate2},'yyyy-MM-dd') 
+	 			]]>
+	 		</if>
+	 	</where>
+	 </sql>
+	 
+	<insert id="save">
+		insert into 
+		customer_services
+		(id, create_date, created_id, customer_id, 
+		service_request, service_state, service_title, service_type )
+		values(crm_seq.nextval,#{createDate},#{createdby.id},#{customer.id},
+				#{serviceRequest},#{serviceState},#{serviceTitle},#{serviceType})
+	</insert>
+	
+	
+	<select id="selectTotalRecords" resultType="long">
+		select count(cs.id) 
+		from customer_services cs 
+		<include refid="queryCondition"/>
+	</select>
+	
+	<select id="selectPageContent" resultType="com.atguigu.crm.entity.CustomerService">
+		select r.* 
+		from (
+			select rownum rn, cs.id, service_type as "serviceType",service_title as "serviceTitle", cs.created_id, 
+			c.name as "customer.name",u.name as "createdby.name", cs.create_date as "createDate" 
+			from customer_services cs 
+			left outer join customers c 
+			on cs.customer_id = c.id 
+			left outer join users u 
+			on cs.created_id = u.id 
+			<include refid="queryCondition"/>
+		) r 
+		<![CDATA[
+			where r.rn > #{fromIndex} and r.rn <= #{endIndex}
+		]]>
+	</select>
+	
+	<select id="get" resultType="com.atguigu.crm.entity.CustomerService">
+		select cs.id, service_type as "serviceType",service_title as "serviceTitle", 
+		c.name as "customer.name",u.name as "createdby.name", cs.create_date as "createDate", 
+		cs.allot_id as "allotTo.id", u.name as "allotTo.name", cs.allot_date as "allotDate", 
+		cs.service_deal as "serviceDeal", r.name as "allotTo.role.name", 
+		cs.service_request as "serviceRequest",cs.deal_date as "dealDate", cs.deal_result as "dealResult",  
+		cs.satisfy, cs.service_state as "serviceState"  
+		from customer_services cs 
+		left outer join customers c 
+		on cs.customer_id = c.id 
+		left outer join users u 
+		on cs.created_id = u.id 
+		left outer join roles r 
+		on u.role_id = r.id
+		where cs.id = #{id}
+	</select>
+	
+	<update id="update">
+		update
+	        customer_services 
+	    set
+	        allot_date=#{allotDate},
+	        allot_id=#{allotTo.id},
+	        service_state=#{serviceState},
+	        deal_date=#{dealDate,jdbcType=VARCHAR},
+	        service_deal=#{serviceDeal,jdbcType=VARCHAR},
+	        deal_result=#{dealResult,jdbcType=VARCHAR},
+	        satisfy=#{satisfy,jdbcType=VARCHAR}
+	    where
+	        id=#{id}
+	</update>
+	
+</mapper>

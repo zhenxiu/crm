@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.atguigu.crm.dao.CustomerMapper">
+
+<!-- //客户编号private String no;//姓名private String name;//区域private String region;
+//客户经理private Contact manager;//客户等级private String level;
+//客户满意度private String satify;//客户信用度private String credit;
+//客户地址private String address;//邮编private String zip;
+//联系电话private String tel;//客户传真private String fax;
+//网址private String websit;//执照注册号private String licenceNo;
+//法人private String chief;//注册资金private Long bankroll;
+//年营业额private Long turnover;//开户行private String bank;
+//银行账号private String bankAccount;//地税登记号private String localTaxNo;
+//国税登记号private String nationalTaxNo;//客户状态private String state;
+//联系人信息private Set<Contact> contacts = new HashSet<>();//订单信息private Set<Order> orders = new HashSet<>(); -->
+
+	<select id="getAll" resultType="com.atguigu.crm.entity.Customer">
+		select id, address, bank, bank_account as "bankAccount", bankroll, chief, 
+		credit, fax, licence_no as "licenceNo", 
+		local_tax_no as "localTaxNo", name, national_tax_no as "nationalTaxNo", 
+		no, region, satify, state, tel, turnover, websit, zip, 
+		manager_id as "manager.id", customer_level as "level"
+		from customers 
+	</select>
+	
+</mapper>
+

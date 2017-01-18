@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.atguigu.crm.dao.SalesPlanMapper">
+	
+	<sql id="chanceColumns">
+		s.id, contact, contact_tel, create_date, cust_name, 
+		s.description, designee_date, rate, source, s.status, 
+		title, created_user_id as "createBy.id", designee_id as "designee.id"
+	</sql>
+	
+	<!-- <insert id="save" parameterType="com.atguigu.crm.entity.SalesPlan">
+		INSERT INTO sales_plan(id, plan_date, todo, chance_id)
+		VALUES(crm_seq.nextval, #{date}, #{todo}, #{chance.id})
+	</insert> -->
+	
+	<delete id="delete">
+		delete from sales_plan where id = #{id}
+	</delete>
+	
+	<select id="get" resultType="com.atguigu.crm.entity.SalesPlan">
+		select id, plan_date, plan_result, todo, chance_id as "chance.id" 
+		from sales_plan 
+		where id = #{id}
+	</select>
+	
+	<!-- <resultMap type="com.atguigu.crm.entity.SalesChance" id="chanceMap">
+		<id column="id" property="id"/>
+		<result column="contact" property="contact"/>
+		<result column="contact_tel" property="contactTel"/>
+		<result column="create_date" property="createDate"/>
+		<result column="cust_name" property="custName"/>
+		
+		<result column="description" property="description"/>
+		<result column="designee_date" property="designeeDate"/>
+		<result column="rate" property="rate"/>
+		<result column="source" property="source"/>
+		<result column="status" property="status"/>
+		
+		<result column="title" property="title"/>
+		<result column="createBy.id" property="createBy.id"/>
+		<result column="designee.id" property="designee.id"/>
+		<result column="createBy.name" property="createBy.name"/>
+		<result column="designee.name" property="designee.name"/>
+		
+		<collection property="salesPlans" javaType="com.atguigu.crm.entity.SalesPlan">
+			<id column="p_id" property="id"/>
+			<result column="todo" property="todo"/>
+			<result column="plan_date" property="date"/>
+			
+			<result column="plan_result" property="result"/>
+			<result column="chance_id" property="chance.id"/>
+		</collection>
+		
+	</resultMap>
+	
+	<select id="getChanceById" resultMap="chanceMap">
+		SELECT <include refid="chanceColumns"/>, u1.name as "createBy.name", u2.name as "designee.name",  p.id as "p_id", todo, plan_date, plan_result, chance_id
+		FROM sales_chances s
+		LEFT OUTER JOIN sales_plan p
+		ON s.id = p.chance_id
+		LEFT OUTER JOIN users u1
+		ON s.created_user_id = u1.id
+		LEFT OUTER JOIN users u2
+		ON s.designee_id = u2.id
+		WHERE s.id = #{chanceId}
+	</select> -->
+	
+	
+	
+	
+	
+	
+	
+	
+	<resultMap type="com.atguigu.crm.entity.SalesChance" id="chanceMap">
+		<id column="id" property="id"/>
+		<result column="contact" property="contact"/>
+		<result column="contact_tel" property="contactTel"/>
+		<result column="create_date" property="createDate"/>
+		<result column="cust_name" property="custName"/>
+		
+		<result column="description" property="description"/>
+		<result column="designee_date" property="designeeDate"/>
+		<result column="rate" property="rate"/>
+		<result column="source" property="source"/>
+		<result column="status" property="status"/>
+		
+		<result column="title" property="title"/>
+		<result column="createBy.id" property="createBy.id"/>
+		<result column="designee.id" property="designee.id"/>
+		<result column="createBy.name" property="createBy.name"/>
+		<result column="designee.name" property="designee.name"/>
+		<collection property="salesPlans" javaType="com.atguigu.crm.entity.SalesPlan">
+			<id column="id" property="id"/>
+			<result column="plan_date" property="date"/>
+			<result column="todo" property="todo"/>
+			<result column="plan_result" property="result"/>
+			<result column="chance_id" property="chance.id"/>
+		</collection>
+	</resultMap>
+	
+	
+	<select id="getChanceById" resultMap="chanceMap">
+		select s.id, contact, contact_tel, create_date, cust_name, 
+		description, designee_date, rate, source, status, title, 
+		created_user_id as "createBy.id", designee_id as "designee.id", 
+		u1.name as "createBy.name", u2.name as "designee.name", 
+		p.id, plan_date, plan_result, todo, chance_id 
+		from sales_chances s 
+		left outer join users u1 
+		on s.created_user_id = u1.id 
+		left outer join users u2 
+		on s.designee_id = u2.id
+		left outer join sales_plan p 
+		on p.chance_id = s.id
+		where s.id = #{id}
+	</select>
+	
+	
+	
+	<update id="update">
+		update sales_plan 
+		set todo=#{todo}, plan_result=#{result,jdbcType=VARCHAR} 
+		where id = #{id}
+	</update>
+
+</mapper>
+
+
